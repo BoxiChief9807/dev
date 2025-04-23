@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>macOS Web Emulator</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1950&q=80') no-repeat center center fixed;
+      background-size: cover;
+    }
+    #menu-bar {
+      height: 24px;
+      background-color: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(10px);
+      color: black;
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+    }
+    #dock {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(10px);
+      padding: 8px;
+      border-radius: 20px;
+      display: flex;
+      gap: 10px;
+    }
+    .dock-icon {
+      width: 48px;
+      height: 48px;
+      transition: transform 0.2s ease;
+      cursor: pointer;
+    }
+    .dock-icon:hover {
+      transform: scale(1.2);
+    }
+    .desktop-icon {
+      position: absolute;
+      top: 60px;
+      left: 20px;
+      text-align: center;
+      color: white;
+      width: 60px;
+    }
+    .desktop-icon img {
+      width: 48px;
+      height: 48px;
+    }
+    .window {
+      width: 700px;
+      height: 480px;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      position: absolute;
+      top: 100px;
+      left: 100px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      display: none;
+      flex-direction: column;
+      max-width: 100%;
+      max-height: 100%;
+      transition: all 0.3s ease;
+    }
+    .window-header {
+      height: 30px;
+      background: #f0f0f0;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 8px;
+    }
+    .window-title {
+      flex: 1;
+      font-weight: bold;
+    }
+    .window-buttons {
+      display: flex;
+      gap: 6px;
+    }
+    .window-button {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    .window-close {
+      background: red;
+    }
+    .window-minimize {
+      background: yellow;
+    }
+    .window-maximize {
+      background: green;
+    }
+    .window-content iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    .finder-toolbar {
+      background: #e0e0e0;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 12px;
+      font-size: 14px;
+    }
+    .finder-sidebar {
+      width: 200px;
+      background: #f7f7f7;
+      border-right: 1px solid #ccc;
+      padding: 10px;
+    }
+    .finder-sidebar h4 {
+      margin: 0 0 8px;
+      font-size: 12px;
+      color: #666;
+    }
+    .finder-sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .finder-sidebar li {
+      margin: 5px 0;
+      cursor: pointer;
+    }
+    .finder-main {
+      flex: 1;
+      padding: 10px;
+      overflow: auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .finder-item {
+      width: 80px;
+      text-align: center;
+    }
+    .finder-item img {
+      width: 48px;
+      height: 48px;
+    }
+  </style>
+</head>
+<body>
+  <div id="menu-bar">
+     Safari Fichier Édition Présentation Historique Signets Aide
+  </div>
+
+  <div class="desktop-icon" onclick="openFinder()">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/3/31/MacOS_Finder_Icon.png" alt="Finder">
+    <div>Finder</div>
+  </div>
+
+  <div id="dock">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/5/52/Apple_Safari_2020_icon.png" alt="Safari" class="dock-icon" onclick="openSafari()" />
+    <img src="https://upload.wikimedia.org/wikipedia/commons/3/31/MacOS_Finder_Icon.png" alt="Finder" class="dock-icon" onclick="openFinder()" />
+    <img src="https://upload.wikimedia.org/wikipedia/commons/4/4f/Apple_Notes_icon.png" alt="Notes" class="dock-icon" onclick="openNotes()" />
+    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5f/Apple_Mail_icon.png" alt="Mail" class="dock-icon" onclick="openMail()" />
+    <img src="https://upload.wikimedia.org/wikipedia/commons/2/20/Apple_Music_Icon.png" alt="Music" class="dock-icon" onclick="openMusic()" />
+  </div>
+
+  <div class="window" id="safari-window">
+    <div class="window-header">
+      <div class="window-title">Safari</div>
+      <div class="window-buttons">
+        <div class="window-close" onclick="closeSafari()"></div>
+        <div class="window-minimize" onclick="minimizeSafari()"></div>
+        <div class="window-maximize" onclick="maximizeSafari()"></div>
+      </div>
+    </div>
+    <div class="window-content">
+      <iframe src="https://www.google.com" title="Safari Web"></iframe>
+    </div>
+  </div>
+
+  <div class="window" id="finder-window">
+    <div class="window-header">
+      <div class="window-title">Finder</div>
+      <div class="window-buttons">
+        <div class="window-close" onclick="closeFinder()"></div>
+        <div class="window-minimize" onclick="minimizeFinder()"></div>
+        <div class="window-maximize" onclick="maximizeFinder()"></div>
+      </div>
+    </div>
+    <div class="finder-toolbar">
+      <span>◀</span><span>▶</span>
+      <span>Afficher</span>
+      <span>Action</span>
+    </div>
+    <div style="display: flex; flex: 1;">
+      <div class="finder-sidebar">
+        <h4>Favoris</h4>
+        <ul>
+          <li>Bureau</li>
+          <li>Documents</li>
+          <li>Téléchargements</li>
+          <li>Applications</li>
+        </ul>
+      </div>
+      <div class="finder-main">
+        <div class="finder-item">
+          <img src="https://cdn-icons-png.flaticon.com/512/716/716784.png" alt="file">
+          <div>Projet.html</div>
+        </div>
+        <div class="finder-item">
+          <img src="https://cdn-icons-png.flaticon.com/512/716/716784.png" alt="folder">
+          <div>Images</div>
+        </div>
+        <div class="finder-item">
+          <img src="https://cdn-icons-png.flaticon.com/512/716/716784.png" alt="folder">
+          <div>Musique</div>
+        </div>
+        <div class="finder-item">
+          <img src="https://cdn-icons-png.flaticon.com/512/716/716784.png" alt="folder">
+          <div>Vidéos</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openSafari() {
+      document.getElementById("safari-window").style.display = "flex";
+    }
+    function closeSafari() {
+      document.getElementById("safari-window").style.display = "none";
+    }
+    function maximizeSafari() {
+      const window = document.getElementById("safari-window");
+      window.style.width = "100%";
+      window.style.height = "100%";
+      window.style.top = "0";
+      window.style.left = "0";
+    }
+    function minimizeSafari() {
+      document.getElementById("safari-window").style.display = "none";
+    }
+
+    function openFinder() {
+      document.getElementById("finder-window").style.display = "flex";
+    }
+    function closeFinder() {
+      document.getElementById("finder-window").style.display = "none";
+    }
+    function maximizeFinder() {
+      const window = document.getElementById("finder-window");
+      window.style.width = "100%";
+      window.style.height = "100%";
+      window.style.top = "0";
+      window.style.left = "0";
+    }
+    function minimizeFinder() {
+      document.getElementById("finder-window").style.display = "none";
+    }
+    
+    function openNotes() {
+      alert("Notes App simulée");
+    }
+
+    function openMail() {
+      alert("Mail App simulée");
+    }
+
+    function openMusic() {
+      alert("Music App simulée");
+    }
+  </script>
+</body>
+</html>
